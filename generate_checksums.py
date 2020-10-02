@@ -33,7 +33,7 @@ def generate_checksums():
             bd.execute("UPDATE archivos set checksum = '{checksum}' WHERE id = {id}".format(
                 checksum=cs, id=row['id']))
             with open('checksums.csv', 'a+') as file:
-                string = str(row['archivo'])+','+cs+'\n'
+                string = str(row['archivo'])+';'+cs+'\n'
                 file.write(string)
             bd.commit()
             

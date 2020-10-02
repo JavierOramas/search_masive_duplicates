@@ -4,7 +4,7 @@ import hashlib
 import threading
 import time
 from os import cpu_count
-
+import pandas
 
 HILOS = cpu_count()
 
@@ -26,18 +26,18 @@ def gen_checksums(num_hilo, **datos):
     bd.row_factory = dict_factory
     path_files = bd.execute(" SELECT * FROM archivos WHERE checksum IS NULL LIMIT {limit} OFFSET {end}" 
                                                 .format(limit=datos['files_num_segment'],end=datos['contador']))
+    data = []
     for row in path_files.fetchall():
         # os.system("clear")
-        start_time = time.clock()
         file = open(row['archivo'],'rb')
         cs = hashlib.sha256(file.read()).hexdigest()
-        with open('checksums.csv', 'a+') as file:
-                string = str(row['archivo'])+','+cs+'\n'
-                file.write(string)
+        data.append([row['archivo'], cs])
         # bd.execute("UPDATE archivos set checksum = '{checksum}' WHERE id = {id}".format(checksum=cs, id=row['id']))
         # bd.commit()
         # print("Hilo {0} calculó el Checksum {1} que tiene un tamaño de: {2}, tardó: {3} segundos".format(num_hilo, row['id'], getSize(file), time.clock() - start_time))
-
+    df = pandas.DataFrame(data, columns=['Path', 'checksum'])
+    df.to_csv(open('checksums.csv','w'), sep=';')
+    
 def generate_multithreaded():        
     db = sqlite3.connect('dropbox.db')
     db.row_factory = dict_factory

@@ -23,7 +23,6 @@ def walk_dir(file_path:str):
     for (path, directorios, archivos) in os.walk(file_path):
         print(path)
         for a in archivos:
-            print(a)
             sqlite_insert(bd, 'archivos', {
                 'archivo': path+"/"+a})
 
