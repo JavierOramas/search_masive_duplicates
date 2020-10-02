@@ -10,23 +10,24 @@ def sqlite_insert(conn, table, row):
 
 
 # list = os.listdir("/run/user/1000/gvfs/smb-share:server=codex2,share=archivosdigitales")
-
-bd = sqlite3.connect('dropbox.db')
-bd.execute(""" CREATE TABLE IF NOT EXISTS archivos (
-                                        id integer PRIMARY KEY,
-                                        archivo text NOT NULL,
-                                        checksum text
-                                    ); """)
-
-
-
-for (path, directorios, archivos) in os.walk("/run/user/1000/gvfs/smb-share:server=codex2,share=archivosdigitales"):
-    print(path)
-    for a in archivos:
-        sqlite_insert(bd, 'archivos', {
-            'archivo': path+"/"+a})
+def walk_dir(file_path:str):
+    bd = sqlite3.connect('dropbox.db')
+    bd.execute(""" CREATE TABLE IF NOT EXISTS archivos (
+                                            id integer PRIMARY KEY,
+                                            archivo text NOT NULL,
+                                            checksum text
+                                        ); """)
 
 
-bd.close()
 
-print("Registro de archivos exitoso")
+    for (path, directorios, archivos) in os.walk(file_path):
+        print(path)
+        for a in archivos:
+            print(a)
+            sqlite_insert(bd, 'archivos', {
+                'archivo': path+"/"+a})
+
+
+    bd.close()
+
+    print("Registro de archivos exitoso")

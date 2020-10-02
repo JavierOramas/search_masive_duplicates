@@ -10,26 +10,30 @@ def dict_factory(cursor, row):
         d[col[0]] = row[idx]
     return d
 
+def generate_checksums():
+    bd = sqlite3.connect('dropbox.db')
+    bd.row_factory = dict_factory
 
-bd = sqlite3.connect('codex2.db')
-bd.row_factory = dict_factory
 
+    path_files = bd.execute(""" SELECT * FROM archivos WHERE checksum IS NULL""")
 
-path_files = bd.execute(""" SELECT * FROM archivos WHERE checksum IS NULL""")
-
-for row in path_files.fetchall():
-    os.system("clear")
-    try:
-        print("Deteneme con Ctrl+c")
-        sleep(0)
-    except KeyboardInterrupt:
+    for row in path_files.fetchall():
         os.system("clear")
-        print("Adios!")
-        exit()
-    else:
-        os.system("clear")
-        print("calculando Checksum", row['id'])
-        cs = hashlib.md5(open(row['archivo'], 'rb').read()).hexdigest()
-        bd.execute("UPDATE archivos set checksum = '{checksum}' WHERE id = {id}".format(
-            checksum=cs, id=row['id']))
-        bd.commit()
+        try:
+            print("Deteneme con Ctrl+c")
+            sleep(0)
+        except KeyboardInterrupt:
+            os.system("clear")
+            print("Adios!")
+            exit()
+        else:
+            os.system("clear")
+            print("calculando Checksum", row['id'])
+            cs = hashlib.sha256(open(row['archivo'], 'rb').read()).hexdigest()
+            bd.execute("UPDATE archivos set checksum = '{checksum}' WHERE id = {id}".format(
+                checksum=cs, id=row['id']))
+            with open('checksums.csv', 'a+') as file:
+                string = str(row['archivo'])+','+cs+'\n'
+                file.write(string)
+            bd.commit()
+            
